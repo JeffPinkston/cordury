@@ -10,6 +10,12 @@ var users = require('./routes/users');
 
 var app = express();
 
+var mongoose = require('mongoose');
+require('./models/Albums');
+require('./models/Tracks')
+
+mongoose.connect('mongodb://locahost/albums');
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');

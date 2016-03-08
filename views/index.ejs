@@ -1,11 +1,101 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title><%= title %></title>
-    <link rel='stylesheet' href='/stylesheets/style.css' />
-  </head>
-  <body>
-    <h1><%= title %></h1>
-    <p>Welcome to <%= title %></p>
-  </body>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1"> <!-- To disable scroll add: , maximum-scale=1, user-scalable=no -->
+  <title>Corduroy</title>
+  <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+
+  <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.10/angular.min.js"></script>
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.2.10/angular-ui-router.js"></script>
+  <script src="/javascripts/angularApp.js"></script>
+  <style> .glyphicon-thumbs-up { cursor:pointer } </style>
+</head>
+<body ng-app="corduroy">
+  <div class="row">
+    <div class="col-md-6 col-md-offset-3">
+      <ui-view></ui-view>
+    </div>
+  </div>
+
+  <!-- home.html template --> 
+  <script type="text/ng-template" id="/home.html">
+    <div class="page-header">
+      <h1>Pearl Jam Discography</h1>
+    </div>
+
+    <div ng-repeat="album in albums | orderBy:'-upvotes'">
+        <span class="glyphicon glyphicon-thumbs-up"
+          ng-click="incrementUpvotes(albums)"></span>
+        {{album.upvotes}}
+        <span style="font-size:20px; margin-left:10px;">
+          <a ng-show="album.link" href="{{album.link}}">
+            {{album.title}}
+          </a>
+          <span ng-hide="album.link">
+            {{album.title}}
+          </span>
+          <span>
+            <a href="#/albums/{{$index}}">Tracks</a>
+          </span>
+        </span>
+      </div>
+
+      <form ng-submit="addAlbum()"
+        style="margin-top:30px;">
+        <h3>Add a new Album</h3>
+
+        <div class="form-group">
+          <input type="text"
+            class="form-control"
+            placeholder="Title"
+            ng-model="title"></input>
+        </div>
+        <div class="form-group">
+          <input type="text"
+          class="form-control"
+          placeholder="Link"
+          ng-model="link"></input>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Album</button>
+      </form>
+  </script>
+
+  <script type="text/ng-template" id="/albums.html">
+  <div class="page-header">
+    <h3>
+      <a ng-show="post.link" href="{{album.link}}">
+        {{album.title}}
+      </a>
+      <span ng-hide="post.link">
+        {{album.title}}
+      </span>
+    </h3>
+  </div>
+
+  <div ng-repeat="track in album.tracks | orderBy:'-upvotes'">
+    <span class="glyphicon glyphicon-thumbs-up"
+      ng-click="incrementUpvotes(track)"></span>
+    {{track.upvotes}} - by {{track.author}}
+    <span style="font-size:20px; margin-left:10px;">
+      {{track.title}}
+    </span>
+  </div>
+  <form ng-submit="addTrack()"
+    style="margin-top:30px;">
+    <h3>Add a new track</h3>
+
+    <div class="form-group">
+      <input type="text"
+      class="form-control"
+      placeholder="Track"
+      ng-model="title"></input>
+    </div>
+    <button type="submit" class="btn btn-primary">Add Track</button>
+    <span>
+        <a href="#/home/">Albums</a>
+    </span>
+  </form>
+</script>
+
+</body>
 </html>
