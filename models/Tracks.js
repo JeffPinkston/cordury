@@ -7,4 +7,9 @@ var TrackSchema = new mongoose.Schema({
 	album: { type: mongoose.Schema.Types.ObjectId, ref: 'Album'}
 });
 
-mongoose.model('Track', TrackSchema)
+TrackSchema.methods.upvote = function(cb) {
+	this.upvotes += 1;
+	this.save(cb);
+}
+
+mongoose.model('Track', TrackSchema);

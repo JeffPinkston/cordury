@@ -18,24 +18,24 @@
   </div>
 
   <!-- home.html template --> 
-  <script type="text/ng-template" id="/home.html">
+  <script type="text/ng-template" id="/albums.html">
     <div class="page-header">
       <h1>Pearl Jam Discography</h1>
     </div>
 
     <div ng-repeat="album in albums | orderBy:'-upvotes'">
         <span class="glyphicon glyphicon-thumbs-up"
-          ng-click="incrementUpvotes(albums)"></span>
+          ng-click="incrementUpvotes(album)"></span>
         {{album.upvotes}}
         <span style="font-size:20px; margin-left:10px;">
-          <a ng-show="album.link" href="{{album.link}}">
+          <a ng-show="album.tracks" href="#/tracks/{{album._id}}">
             {{album.title}}
           </a>
-          <span ng-hide="album.link">
+          <span ng-hide="album.tracks">
             {{album.title}}
           </span>
           <span>
-            <a href="#/albums/{{$index}}">Tracks</a>
+            <a href="#/tracks/{{album._id}}">Track List</a>
           </span>
         </span>
       </div>
@@ -60,13 +60,13 @@
       </form>
   </script>
 
-  <script type="text/ng-template" id="/albums.html">
+  <script type="text/ng-template" id="/tracks.html">
   <div class="page-header">
     <h3>
-      <a ng-show="post.link" href="{{album.link}}">
+      <a ng-show="album.link" href="{{album.link}}">
         {{album.title}}
       </a>
-      <span ng-hide="post.link">
+      <span ng-hide="album.link">
         {{album.title}}
       </span>
     </h3>
@@ -92,7 +92,7 @@
     </div>
     <button type="submit" class="btn btn-primary">Add Track</button>
     <span>
-        <a href="#/home/">Albums</a>
+        <a href="#/albums/">Albums</a>
     </span>
   </form>
 </script>
