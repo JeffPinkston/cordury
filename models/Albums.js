@@ -4,7 +4,8 @@ var AlbumSchema = new mongoose.Schema({
 	title: String,
 	year: {type: String, default: '1996'},
 	upvotes: {type: Number, default: 0},
-	tracks: [{type: mongoose.Schema.Types.ObjectId, ref: 'Track'}]
+	tracks: [{type: mongoose.Schema.Types.ObjectId, ref: 'Track'}],
+	author: String
 });
 
 AlbumSchema.methods.upvote = function(cb) {

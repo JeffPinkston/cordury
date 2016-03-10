@@ -44,12 +44,32 @@ app.controller('TracksCtrl', [
 		};
 }]);
 
+app.controller('AuthCtrl', [
+	'$scope',
+	'$state',
+	'auth',
+	function($scope, $state, auth){
+		$scope.user = {};
+
+		$scope.register = function() {
+			console.log('AuthCtrl.register');
+			auth.register($scope.user).error(function(error){
+				$scope.error = error;
+			}).then(function(){
+				$state.go('albums');
+			});
+		}
+	}
+]);
+
+//craete factory for albums
 app.factory('albums', [
 	'$http',
 	function($http){
 	var o = {
 		albums: []
 	};
+
 
 	o.getAll = function(){
 		return $http.get('/albums').success(function(data){
@@ -59,26 +79,35 @@ app.factory('albums', [
 
 	o.create = function(album) {
 		return $http.post('/albums', album).success(function(data){
-			console.log(data);
+			//console.log(data);
 			o.albums.push(data);
 		});
 	};
 
 	o.upvote = function(album) {
-		console.log(album);
+		//console.log(album);
 		return $http.put('/albums/' + album._id + '/upvote')
 			.success(function(data){
 				album.upvotes += 1;
 			});
 	};
-
+	/**
+	 * get - returns single album from collection based on id
+	 * @param  {String} id album id
+	 * @return {Album}    single ablumb from collection
+	 */
 	o.get = function(id) {
 		return $http.get('/albums/' + id).then(function(res){
-			console.log(res.data);
+			//console.log(res.data);
 			return res.data;
 		});
 	};
 
+    /**
+     * Adds Track to currently selected Album
+     * @param {String} id    Album _id
+     * @param {Track} track track 
+     */
 	o.addTrack = function(id, track) {
 		console.log('Add Track');
 		console.log(id);
@@ -86,6 +115,12 @@ app.factory('albums', [
 		return $http.post('/albums/' + id + '/tracks', track);
 	};
 
+	/**
+	 * upvoteTrack increments upvote prop of selected track
+	 * @param  {Album} album 
+	 * @param  {Track} track 
+	 * @return {Obj}   album collection
+	 */
 	o.upvoteTrack = function(album, track) {
 	  return $http.put('/albums/' + album._id + '/tracks/'+ track._id + '/upvote')
 	    .success(function(data){
@@ -96,6 +131,71 @@ app.factory('albums', [
 	return o;
 }]);
 
+app.factory('auth', ['$http', '$window', function($http, $window){
+	var auth = {};
+
+	auth.saveToken = function(token) {
+		$window.localStorage['corduroy-token'] = token;
+	};
+
+	auth.getToken = function() {
+		return $window.localStorage['corduroy-token'];
+	};
+
+	auth.isLoggedIn = function() {
+		var token = auth.getToken();
+
+		if(token) {
+			var payload = JSON.parse($window.atob(token.split('.')[1]));
+
+			return payload.exp > Date.now() / 1000;
+		} else {
+			return false;
+		}
+	};
+
+	auth.currentUser = function() {
+		if(auth.isLoggedIn()){
+			var token = auth.getToken();
+			var payload = JSON.parse($window.atob(token.split('.')[1]));
+
+			return payload.username;
+		}
+	};
+
+	auth.register = function(user) {
+		console.log(user);
+		return $http.post('/register', user).success(function(data){
+			auth.saveToken(data.token);
+		});
+	};
+
+	auth.logIn = function(user) {
+		console.log(user);
+		return $http.post('/login', user).success(function(data){
+			auth.saveToken(data.token);
+		});
+	};
+
+	auth.logOut = function(){
+	  $window.localStorage.removeItem('corduroy-token');
+	};
+
+	return auth;
+}]);
+
+app.controller('NavCtrl', [
+	'$scope',
+	'auth',
+	function($scope, auth){
+		$scope.isLoggedIn = auth.isLoggedIn;
+		$scope.currentUser = auth.currentUser;
+		$scope.logOut = auth.logOut;
+	}
+
+	]);
+
+//config state provider for various states
 app.config([
 '$stateProvider',
 '$urlRouterProvider',
@@ -121,10 +221,34 @@ function($stateProvider, $urlRouterProvider) {
 			controller: 'TracksCtrl',
 			resolve: {
 				album: ['$stateParams', 'albums', function($stateParams, albums){
-					console.log(albums.get($stateParams.id));
+					//console.log(albums.get($stateParams.id));
 					return albums.get($stateParams.id);
 				}]
 			}
+		});
+
+	$stateProvider
+		.state('login', {
+			url: '/login',
+			templateUrl: '/login.html',
+			controller: 'AuthCtrl',
+			onEnter: ['$state', 'auth', function($state, auth){
+				if(auth.isLoggedIn()) {
+					$state.go('albums');
+				}
+			}]
+		});
+
+	$stateProvider
+		.state('register', {
+			url: '/register',
+			templateUrl: '/register.html',
+			controller: 'AuthCtrl',
+			onEnter: ['$state', 'auth', function($state, auth){
+				if(auth.isLoggedIn()) {
+					$state.go('albums');
+				}
+			}]
 		});
 
 	$urlRouterProvider.otherwise('albums');
